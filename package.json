@@ -1,0 +1,21 @@
+{
+  "name": "dhis2-import-event",
+  "version": "1.0.0",
+  "description": "Petit Script de migration des données du stage Examens de Sortie dans le stage Examens de controle du formulaire COVID19-CAS",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "dhis2",
+    "covid",
+    "guinea"
+  ],
+  "author": "didate",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "colors": "^1.4.0",
+    "config": "^3.3.1"
+  }
+}
