@@ -3,18 +3,21 @@ const { constants } = require('./constants/DE');
 
 const functions = require('./Transform');
 
-dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program=${constants.PROGRAM}&programStage=${constants.PROGRAM_STAGE_ESORTIE}`).then(async (res) => {
+dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program=${constants.PROGRAM}&programStage=${constants.PROGRAM_STAGE_ESORTIE}&pageSize=200&page=1`).then(async (res) => {
 
+    let page = 1;
     let { events } = res.data;
     try {
         while (events && events.length > 0) {
             events.forEach((event) => {
-                const examens = transform(event);
+                let examens;
+                examens = transform(event);
 
                 if (examens) {
+                    console.log(examens.length);
                     examens.forEach((exam) => {
                         dhis2.post('/events', JSON.stringify(exam)).then((res) => {
-                            console.log("OK");
+                            //console.log("OK");
                         }).catch((err) => {
                             console.log(console.log(err));
                         });
@@ -23,8 +26,11 @@ dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program
                 }
 
             });
-            const newRes = await dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program=${constants.PROGRAM}&programStage=${constants.PROGRAM_STAGE_ESORTIE}`);
+            console.log("OK");
+            page = page + 1;
+            const newRes = await dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program=${constants.PROGRAM}&programStage=${constants.PROGRAM_STAGE_ESORTIE}&pageSize=200&page=${page}`);
             events = newRes.data.events;
+
         }
     } catch (error) {
         console.log(error);
