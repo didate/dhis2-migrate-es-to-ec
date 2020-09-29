@@ -4,7 +4,9 @@
   "description": "Petit Script de migration des données du stage Examens de Sortie dans le stage Examens de controle du formulaire COVID19-CAS",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server",
+    "server": "nodemon server"
   },
   "keywords": [
     "dhis2",
@@ -17,5 +19,8 @@
     "axios": "^0.20.0",
     "colors": "^1.4.0",
     "config": "^3.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
   }
 }
