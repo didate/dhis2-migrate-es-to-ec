@@ -2,5 +2,8 @@
     "dhis2": {
         "baseUrl": "https://play.dhis2.org/dev/api/33",
         "token": "Basic base64"
+    },
+    "mongo": {
+        "uri": "mongodb://127.0.0.1:27017/controle"
     }
 }

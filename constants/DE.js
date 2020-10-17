@@ -107,7 +107,8 @@ const constants = {
     ORG_UNIT: 'Ky2CzFdfBuO',
     PROGRAM: 'XkODyTBxQXB',
     PROGRAM_STAGE_ECONTROL: 'ZiFWEtMuqvs',
-    PROGRAM_STAGE_ESORTIE: 'C0RQyyWzoGE'
+    PROGRAM_STAGE_ESORTIE: 'C0RQyyWzoGE',
+    TRAITE: 'N8j39jM0v26' //WSWsHgENanR
 };
 
 

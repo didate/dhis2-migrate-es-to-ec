@@ -1,33 +1,49 @@
 const { dhis2 } = require('./dhis2');
 const { constants } = require('./constants/DE');
-
+const connectDB = require('./mongoose/db');
 const functions = require('./Transform');
+const programModel = require('./model/trackedEntityInstance');
+const Tei = require('./model/trackedEntityInstance');
+const { default: Axios } = require('axios');
+connectDB();
 
-dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program=${constants.PROGRAM}&programStage=${constants.PROGRAM_STAGE_ESORTIE}&pageSize=200&page=1`).then(async (res) => {
+// get events from dhis2 (first page)
+dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program=${constants.PROGRAM}&programStage=${constants.PROGRAM_STAGE_ESORTIE}&filter=${constants.TRAITE}:EQ:1&pageSize=200&page=1`).then(async (res) => {
 
     let page = 1;
     let { events } = res.data;
     try {
         while (events && events.length > 0) {
-            events.forEach((event) => {
-                let examens;
-                examens = transform(event);
+            events.forEach(async (event) => {
 
-                if (examens) {
-                    console.log(examens.length);
-                    examens.forEach((exam) => {
-                        dhis2.post('/events', JSON.stringify(exam)).then((res) => {
-                            //console.log("OK");
-                        }).catch((err) => {
-                            console.log(console.log(err));
-                        });
-                    })
+                // check if this tei was not already treated
+                const teiFromDb = await Tei.findOne({ tei: event.trackedEntityInstance });
 
+                if (!teiFromDb) {
+                    let constroles = transform(event); // Transform from ES to EC events
+                    if (constroles) {
+                        constroles.forEach(async (constrol) => {
+                            // send one control to dhis 2
+                            await dhis2.post('/events', JSON.stringify(constrol));
+                        })
+                        // save into mongodb
+                        const tei = new Tei({ tei: event.trackedEntityInstance, status: 'success' });
+                        tei.save();
+                        // set traited 
+                        event.dataValues.filter((ev) => ev.dataElement === constants.TRAITE).forEach((e) => e.value = 2);
+                        /* event = event.dataValues.push({
+                            "dataElement": constants.TRAITE,
+                            "value": "2",
+                            "providedElsewhere": false
+                        }) */
+                        await dhis2.put(`/events/${event.event}`, JSON.stringify(event));
+                    }
                 }
 
             });
             console.log("OK");
             page = page + 1;
+            // get events from the next page
             const newRes = await dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program=${constants.PROGRAM}&programStage=${constants.PROGRAM_STAGE_ESORTIE}&pageSize=200&page=${page}`);
             events = newRes.data.events;
 
@@ -38,7 +54,10 @@ dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program
 
 }, (err) => {
     console.log(err);
+}).catch((err) => {
+    console.log(err);
 });
+
 
 const transform = (event) => {
     //;
