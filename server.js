@@ -21,7 +21,9 @@ dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program
 
                 if (!teiFromDb) {
                     let constroles = transform(event); // Transform from ES to EC events
+
                     if (constroles) {
+                        console.log(`${constroles.length} events to create`)
                         constroles.forEach(async (constrol) => {
                             // send one control to dhis 2
                             await dhis2.post('/events', JSON.stringify(constrol));
@@ -31,23 +33,21 @@ dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program
                         tei.save();
                         // set traited 
                         event.dataValues.filter((ev) => ev.dataElement === constants.TRAITE).forEach((e) => e.value = 2);
-                        /* event = event.dataValues.push({
-                            "dataElement": constants.TRAITE,
-                            "value": "2",
-                            "providedElsewhere": false
-                        }) */
+
                         await dhis2.put(`/events/${event.event}`, JSON.stringify(event));
                     }
+                } else {
+                    console.log(`${teiFromDb.tei} already treated`);
                 }
 
             });
             console.log("OK");
             page = page + 1;
             // get events from the next page
-            const newRes = await dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program=${constants.PROGRAM}&programStage=${constants.PROGRAM_STAGE_ESORTIE}&pageSize=200&page=${page}`);
+            const newRes = await dhis2.get(`/events.json?orgUnit=${constants.ORG_UNIT}&ouMode=DESCENDANTS&program=${constants.PROGRAM}&programStage=${constants.PROGRAM_STAGE_ESORTIE}&filter=${constants.TRAITE}:EQ:1&pageSize=200&page=${page}`);
             events = newRes.data.events;
-
         }
+        console.log("End")
     } catch (error) {
         console.log(error);
     }
